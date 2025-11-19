@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Tạo Mã QR</title>
+
+    <!-- Thư viện tạo QR Code (lấy từ CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* CSS để giao diện trông đẹp hơn */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        #text-input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #generate-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        #generate-btn:hover {
+            background-color: #1558b8;
+        }
+
+        #qrcode {
+            margin-top: 25px;
+            /* Căn giữa canvas/img được tạo ra */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 256px;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            border-radius: 8px;
+        }
+        
+        #download-link {
+            display: none; /* Ban đầu ẩn nút tải xuống */
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        #download-link:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Trình Tạo Mã QR</h1>
+        <p>Nhập một liên kết (URL) và nhấn nút để tạo mã QR của bạn.</p>
+
+        <div class="input-group">
+            <input type="text" id="text-input" placeholder="https://www.google.com" value="https://www.google.com">
+        </div>
+        
+        <button id="generate-btn">Tạo Mã QR</button>
+        
+        <!-- Nơi hiển thị mã QR -->
+        <div id="qrcode"></div>
+
+        <!-- Nút để tải mã QR xuống -->
+        <a id="download-link">Tải Xuống Mã QR</a>
+    </div>
+
+    <script>
+        // Lấy các phần tử từ trang web
+        const textInput = document.getElementById('text-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const qrcodeContainer = document.getElementById('qrcode');
+        const downloadLink = document.getElementById('download-link');
+        
+        // Hàm để tạo mã QR
+        const generateQRCode = () => {
+            const url = textInput.value.trim();
+
+            // Kiểm tra xem người dùng đã nhập link chưa
+            if (!url) {
+                alert("Vui lòng nhập một liên kết!");
+                return;
+            }
+
+            // Xóa mã QR cũ trước khi tạo mã mới
+            qrcodeContainer.innerHTML = '';
+            
+            // Sử dụng thư viện để tạo mã QR
+            const qrcode = new QRCode(qrcodeContainer, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Chờ một chút để mã QR được vẽ xong rồi mới tạo link tải xuống
+            setTimeout(() => {
+                const canvas = qrcodeContainer.querySelector('canvas');
+                if (canvas) {
+                    const imageDataUrl = canvas.toDataURL('image/png');
+                    downloadLink.href = imageDataUrl;
+                    downloadLink.download = 'qrcode.png';
+                    downloadLink.style.display = 'inline-block'; // Hiển thị nút tải
+                } else {
+                    // Nếu thư viện tạo ra thẻ <img>
+                    const img = qrcodeContainer.querySelector('img');
+                    if (img) {
+                        downloadLink.href = img.src;
+                        downloadLink.download = 'qrcode.png';
+                        downloadLink.style.display = 'inline-block';
+                    }
+                }
+            }, 50); // 50ms là đủ
+        };
+
+        // Gán sự kiện click cho nút "Tạo Mã QR"
+        generateBtn.addEventListener('click', generateQRCode);
+        
+        // Gán sự kiện nhấn Enter trong ô input
+        textInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                generateQRCode();
+            }
+        });
+
+        // Tự động tạo một mã QR mẫu khi trang vừa tải xong
+        window.onload = generateQRCode;
+    </script>
+
+</body>
+</html>
